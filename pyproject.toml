@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "xjevboost"
+version = "0.1.0"
+description = "Adaptive Jev ensembles designed to speed up prediction on large tabular datasets by learning to query only the row-and-column views needed."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.24", "scikit-learn>=1.3"]
+
+[project.optional-dependencies]
+plot = ["matplotlib>=3.7"]
+test = ["pytest>=7", "pandas>=2"]
+notebooks = ["jupyterlab>=4", "matplotlib>=3.7", "pandas>=2", "ipywidgets>=8", "ipython>=8", "ipykernel>=6", "nbformat>=5.9", "nbclient>=0.10"]
+
+[tool.setuptools.packages.find]
+include = ["xjevboost*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
