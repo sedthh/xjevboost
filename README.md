@@ -14,7 +14,9 @@ We don't retrain the model. We use the Jev, Laya, or compatible model you provid
 
 A **view** contains selected labeled examples and columns, plus the row you want to classify. A greedy tree search learns which views help and when to stop asking for more.
 
-At prediction time, each answer guides the next step. Different rows can take different paths, within your call and token budgets.
+At prediction time, each requested view uses a separate model call (or reuses a cached answer). A row may need just one call or several: each answer guides whether to stop or request another view, within your call and token budgets. Routing tests use answers already available and make no extra calls.
+
+![A large table supplies smaller views to a learned tree. Each view makes one model call; the returned probabilities determine whether to stop or call another view.](assets/how-it-works.svg)
 
 Despite the name, there's no gradient boosting going on here yet, but it's likely coming in a future version.
 

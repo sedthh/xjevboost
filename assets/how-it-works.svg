@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="950" viewBox="0 0 1200 950" role="img" aria-labelledby="title desc">
+  <title id="title">How xjevboost uses multiple smaller model calls</title>
+  <desc id="desc">A binary call tree. View A makes the first model call, then a routing test branches left to view B or right to a prediction after one call. On the left, view B makes the second call and another routing test branches left to a prediction after two calls or right to view C and a prediction after three calls. Routing tests make no model calls. Counts assume no cache hits and sufficient budgets. Training learns the policy without retraining the underlying model.</desc>
+  <defs>
+    <pattern id="grid" width="32" height="23" patternUnits="userSpaceOnUse"><rect width="32" height="23" fill="#fff" stroke="#d9e3de" stroke-width="1"/></pattern>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8" fill="none" stroke="#64786e" stroke-width="1.5"/></marker>
+    <g id="sheet"><rect width="100" height="66" rx="5" fill="#fff" stroke="#adc5b8"/><path d="M0 17H100" stroke="#168059" stroke-width="17"/><path d="M25 26V61M50 26V61M75 26V61M5 35H95M5 48H95" stroke="#d9e3de"/><rect x="28" y="27" width="19" height="7" fill="#f3cb68"/><rect x="53" y="40" width="19" height="7" fill="#b0ddc6"/></g>
+  </defs>
+  <rect width="1200" height="950" rx="20" fill="#f7faf8"/>
+  <g font-family="Arial, Helvetica, sans-serif" fill="#193b2c">
+    <text x="40" y="52" font-size="30" font-weight="700">More data. Smaller requests.</text>
+    <text x="40" y="84" font-size="18" fill="#53695e">One query follows one learned path, with a separate model call for each view it needs.</text>
+    <rect x="30" y="112" width="292" height="480" rx="14" fill="#fff" stroke="#dbe6df"/>
+    <text x="50" y="148" font-size="20" font-weight="700">Your labeled table</text>
+    <rect x="64" y="178" width="224" height="230" fill="url(#grid)" stroke="#b5cbbf"/>
+    <rect x="64" y="178" width="224" height="24" fill="#168059"/>
+    <path d="M96 225H192V271H96ZM160 317H256V363H160Z" fill="#63bf9433" stroke="#168059" stroke-width="2"/>
+    <rect x="128" y="294" width="96" height="46" fill="#63bf9433" stroke="#168059" stroke-width="2"/>
+    <text x="102" y="243" font-size="15" font-weight="700">A</text>
+    <text x="235" y="355" font-size="15" font-weight="700">B</text>
+    <text x="134" y="312" font-size="15" font-weight="700">C</text>
+    <text x="50" y="447" font-size="17">Sample rows and columns</text>
+    <text x="50" y="472" font-size="17">to create fixed candidate views.</text>
+    <text x="50" y="517" font-size="16" fill="#53695e">Each request includes examples</text>
+    <text x="50" y="541" font-size="16" fill="#53695e">and the query to classify.</text>
+    <path d="M333 287H372" fill="none" stroke="#64786e" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="384" y="112" width="786" height="750" rx="14" fill="#fff" stroke="#dbe6df"/>
+    <text x="406" y="148" font-size="20" font-weight="700">The learned call tree</text>
+    <rect x="630" y="171" width="295" height="100" rx="10" fill="#edf7f1" stroke="#168059" stroke-width="2"/>
+    <use href="#sheet" x="645" y="188"/>
+    <text x="762" y="201" font-size="19" font-weight="700">View A → model</text>
+    <text x="762" y="227" font-size="16">Call 1</text>
+    <text x="762" y="251" font-size="15" fill="#53695e">Returns probabilities</text>
+    <path d="M777 272V293" stroke="#64786e" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="651" y="301" width="254" height="44" rx="22" fill="#f0f3f1" stroke="#c1d0c7"/>
+    <text x="778" y="329" text-anchor="middle" font-size="17">Learned routing test</text>
+    <path d="M651 323H640V401" fill="none" stroke="#64786e" stroke-width="2" marker-end="url(#arrow)"/>
+    <path d="M905 323H1030V401" fill="none" stroke="#64786e" stroke-width="2" marker-end="url(#arrow)"/>
+    <text x="505" y="378" font-size="15" fill="#53695e">Left: request view B</text>
+    <text x="951" y="378" font-size="15" fill="#53695e">Right: stop here</text>
+    <rect x="493" y="412" width="295" height="100" rx="10" fill="#edf7f1" stroke="#168059" stroke-width="2"/>
+    <use href="#sheet" x="508" y="429"/>
+    <text x="625" y="442" font-size="19" font-weight="700">View B → model</text>
+    <text x="625" y="468" font-size="16">Call 2</text>
+    <text x="625" y="492" font-size="15" fill="#53695e">Returns probabilities</text>
+    <rect x="930" y="412" width="200" height="100" rx="10" fill="#168059"/>
+    <text x="1030" y="452" text-anchor="middle" font-size="20" fill="#fff" font-weight="700">Prediction</text>
+    <text x="1030" y="483" text-anchor="middle" font-size="17" fill="#fff">1 call total</text>
+    <path d="M640 513V528" fill="none" stroke="#64786e" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="513" y="537" width="254" height="44" rx="22" fill="#f0f3f1" stroke="#c1d0c7"/>
+    <text x="640" y="565" text-anchor="middle" font-size="17">Learned routing test</text>
+    <path d="M513 559H510V615" fill="none" stroke="#64786e" stroke-width="2" marker-end="url(#arrow)"/>
+    <path d="M767 559H790V615" fill="none" stroke="#64786e" stroke-width="2" marker-end="url(#arrow)"/>
+    <text x="470" y="606" font-size="15" fill="#53695e">Left</text>
+    <text x="805" y="606" font-size="15" fill="#53695e">Right: request view C</text>
+    <rect x="410" y="626" width="200" height="66" rx="10" fill="#168059"/>
+    <text x="510" y="653" text-anchor="middle" font-size="20" fill="#fff" font-weight="700">Prediction</text>
+    <text x="510" y="679" text-anchor="middle" font-size="17" fill="#fff">2 calls total</text>
+    <rect x="643" y="626" width="295" height="100" rx="10" fill="#edf7f1" stroke="#168059" stroke-width="2"/>
+    <use href="#sheet" x="658" y="643"/>
+    <text x="775" y="656" font-size="19" font-weight="700">View C → model</text>
+    <text x="775" y="682" font-size="16">Call 3</text>
+    <text x="775" y="706" font-size="15" fill="#53695e">Returns probabilities</text>
+    <path d="M790 727V763" fill="none" stroke="#64786e" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="690" y="774" width="200" height="66" rx="10" fill="#168059"/>
+    <text x="790" y="801" text-anchor="middle" font-size="20" fill="#fff" font-weight="700">Prediction</text>
+    <text x="790" y="827" text-anchor="middle" font-size="17" fill="#fff">3 calls total</text>
+    <text x="40" y="900" font-size="17" font-weight="700">Training learns the policy, not the model.</text>
+    <text x="40" y="926" font-size="16" fill="#53695e">Illustrated calls assume no cache hits and sufficient budgets. Routing tests use existing answers, with no calls.</text>
+  </g>
+</svg>
