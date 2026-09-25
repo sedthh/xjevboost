@@ -1,6 +1,6 @@
 # xjevboost
 
-Classify tabular data with Jev without putting your entire dataset of labeled examples into its context.
+Classify tabular data with Jev, Laya, or compatible OpenJev servers without putting your entire dataset of labeled examples into their context.
 
 xjevboost learns to use a series of smaller slices of your table, asking for more only when it helps and stopping when it has enough.
 
@@ -10,7 +10,7 @@ The goal: get close to full-context prediction quality while spending fewer toke
 
 ## How it works
 
-We don't retrain Jev. We use whichever Jev model you provide and learn which context to send it.
+We don't retrain the model. We use the Jev, Laya, or compatible model you provide and learn which context to send it.
 
 A **view** contains selected labeled examples and columns, plus the row you want to classify. A greedy tree search learns which views help and when to stop asking for more.
 
@@ -53,6 +53,49 @@ print(clf.evaluate(X_test, y_test))
 
 Use a model version and context allowance available to your account. You can also pass `api_key="..."` directly to `JevProvider`.
 
+### Other decision models
+
+The same classifier works with Jev-compatible HTTP servers, including
+[Laya](https://github.com/NandhaKishorM/laya) and
+[OpenJev](https://github.com/razorback16/openjev). Swap the provider:
+
+```python
+from xjevboost import LayaProvider, OpenJevProvider, SystemOneProvider
+
+# Start Laya separately with: pip install "laya[serve]" && laya-serve
+provider = LayaProvider(
+    model="english",
+    context_limit=512,  # Set this to your deployed checkpoint's allowance.
+    revision="my-laya-deployment-v1",
+)
+
+# An existing OpenJev server, with an explicit model and endpoint.
+provider = OpenJevProvider(
+    endpoint="http://127.0.0.1:8080/v1/systemone",
+    model="openjev-0.1",
+    context_limit=32_000,  # Check your server's configured allowance.
+    revision="my-openjev-deployment-v1",
+)
+```
+
+Pass your chosen `provider` to `XJevBoostClassifier` as above. No extra dependencies
+are needed in xjevboost; install and run the model server separately. Laya reads
+`LAYA_API_KEY` and OpenJev reads `OPENJEV_API_KEY` if set, or accepts `api_key=`.
+Neither borrows your TypeSafe key. Unauthenticated local servers work too.
+
+`revision` identifies the server version, weights and inference configuration for
+caching; it does not pin weights on the server. Change it when the deployment
+changes, and refit the policy for a different model. Keep views small for encoder
+models with short contexts; a server may truncate oversized inputs. Token
+estimates remain approximate unless you supply a tokenizer-based bound.
+
+For other `/v1/systemone` Choice servers, use `SystemOneProvider` with the same
+arguments and optional `api_key_env`, `response_model` (the canonical response ID),
+and `max_classes`. For example, OpenJev's Verdict backend needs its own model ID,
+context allowance and 24-class limit. This supports the HTTP contract, not every
+project named OpenJev or arbitrary chat/completions endpoints. Laya specifically
+targets `laya-serve` and validates its selected router checkpoint.
+
 Here, 30% of training rows grow the tree, 20% check which branches to keep, and the rest provide examples for the views. Splits preserve class balance as closely as possible and keep identical feature rows together. The test set stays separate.
 
 Already have your own splits? Pass `calibration_set=(X_cal, y_cal)` and `pruning_set=(X_prune, y_prune)` to `fit` instead of the corresponding fractions. Pruning is optional; fractions must sum to less than 1.
@@ -92,7 +135,7 @@ Provider and other constructor settings:
 
 | Parameter | Default | What it controls |
 |---|---|---|
-| `provider` | `None` | Prediction adapter; pass a configured `JevProvider` |
+| `provider` | `None` | Configured `JevProvider`, `LayaProvider`, `OpenJevProvider`, or custom adapter |
 | `task_instructions` | `""` | What to predict; meaningful instructions are required for Jev |
 | `class_descriptions` | `None` | Mapping from each class label to its meaning; required for Jev |
 | `cache` | `None` | In-memory cache by default; pass a SQLite path or `PredictionCache` to reuse requests |

@@ -74,11 +74,9 @@ class JevProvider:
         if self.transport is not None:
             response = self.transport(payload)
         else:
-            key = self.api_key or os.environ.get("TYPESAFE_API_KEY")
-            if not key:
-                raise ValueError("Set TYPESAFE_API_KEY or pass api_key to JevProvider")
+            headers = self.request_headers()
             request = Request(self.endpoint, canonical(payload).encode("utf-8"),
-                              {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}, method="POST")
+                              headers, method="POST")
             try:
                 with urlopen(request, timeout=self.timeout) as reply:
                     response = json.load(reply)
@@ -95,8 +93,7 @@ class JevProvider:
                         "Jev rejected this request: max_tokens_exceeded. Reduce view size; "
                         "the local token estimate is approximate.") from None
                 raise
-        if response.get("model") != self.model:
-            raise ValueError("Jev returned a different model version; refusing to cache under the requested version")
+        self.validate_response_model(response)
         answer = response["answers"]["classification"]
         probabilities = answer["probabilities"]
         expected = {f"class_{i}" for i in range(len(task.classes))}
@@ -105,3 +102,13 @@ class JevProvider:
         usage = response.get("usage") or {}
         return normalized(Prediction(tuple(probabilities[f"class_{i}"] for i in range(len(task.classes))),
                                      usage.get("input_tokens"), usage.get("output_tokens")), len(task.classes))
+
+    def request_headers(self):
+        key = self.api_key or os.environ.get("TYPESAFE_API_KEY")
+        if not key:
+            raise ValueError("Set TYPESAFE_API_KEY or pass api_key to JevProvider")
+        return {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+
+    def validate_response_model(self, response):
+        if response.get("model") != self.model:
+            raise ValueError("Jev returned a different model version; refusing to cache under the requested version")

@@ -77,6 +77,37 @@ Use descriptive column names and categorical values, especially for query
 features absent from the examples. Extra columns may help pretrained reasoning,
 but do not teach their dataset-specific effect without examples.
 
+## Other System One providers
+
+Use `LayaProvider`, `OpenJevProvider`, or `SystemOneProvider` from
+`xjevboost.systemone` for existing Jev-compatible HTTP servers. These adapters
+need no model SDK; server installation and weights are separate. Do not assume
+all projects named OpenJev implement the same API.
+
+- `LayaProvider(model="english", context_limit=512, revision="deployment-v1")`
+  targets NandhaKishorM/laya's `laya-serve` at
+  `http://127.0.0.1:8000/v1/systemone`. Also supports explicit `multilingual` and
+  `typed-decisions` checkpoints, validating `routing.model` in the response.
+- `OpenJevProvider(endpoint=endpoint, model=model, context_limit=limit,
+  revision=revision)` targets compatible OpenJev servers, including
+  razorback16/openjev. Verify the model ID and context limit for that deployment.
+- `SystemOneProvider` exposes the same HTTP contract for other implementations;
+  set `response_model` when an alias resolves to a different canonical ID, and
+  `max_classes` for backend restrictions (e.g. 24 for OpenJev's Verdict backend).
+
+Laya/OpenJev use `LAYA_API_KEY`/`OPENJEV_API_KEY` respectively, or explicit
+`api_key`. Generic servers only use an environment key when `api_key_env` is
+specified. TypeSafe credentials are never implicitly forwarded. No key is needed
+for an unauthenticated server.
+
+`revision` is a required cache identity for server code, weights and configuration;
+it does not pin the actual server deployment. Update it whenever these change.
+Refit when changing models. Never treat saved leaf weights as portable across
+backends. Keep views within the configured checkpoint's context: encoder servers
+can silently truncate inputs. Estimates are approximate; supply a reliable local
+token estimator for strict budgets. Authentication secrets are not serialized.
+Contract tests use simulated responses, not evidence of real-model accuracy.
+
 ## Use Jev
 
 ```python
